@@ -1,27 +1,91 @@
-import React from 'react';
-import { useWindowDimensions } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { useWindowDimensions, Animated, StyleProp, ViewStyle, Easing } from 'react-native';
 import Svg, { Path, Circle, Mask, G, Ellipse, Rect } from 'react-native-svg';
 
-interface Mascot2SvgProps {
+export interface Mascot2SvgProps {
   width?: number;
   height?: number;
+  style?: StyleProp<ViewStyle>;
+  animated?: boolean;
+  animTranslateY?: Animated.Value;
+  animOpacity?: Animated.Value;
+  animScale?: Animated.Value;
 }
 
-export default function Mascot2Svg({ width, height }: Mascot2SvgProps) {
+export default function Mascot2Svg({
+  width,
+  height,
+  style,
+  animated = true,
+  animTranslateY,
+  animOpacity,
+  animScale,
+}: Mascot2SvgProps) {
   const { width: windowWidth } = useWindowDimensions();
   const effectiveWidth = width ?? windowWidth;
-  const calculatedHeight = (effectiveWidth / 402) * 276;
+  const calculatedHeight = (effectiveWidth / 402) * 356;
   const effectiveHeight = height ?? calculatedHeight;
 
+  // Internal bottom-to-top pop-up animation values
+  const internalTranslateY = useRef(new Animated.Value(45)).current;
+  const internalOpacity = useRef(new Animated.Value(0)).current;
+  const internalScale = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    // If parent controls animation via props, don't run internal animation
+    if (animTranslateY) return;
+
+    Animated.parallel([
+      Animated.spring(internalTranslateY, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(internalOpacity, {
+        toValue: 1,
+        duration: 280,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(internalScale, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [animTranslateY, internalTranslateY, internalOpacity, internalScale]);
+
+  const activeTranslateY = animTranslateY ?? internalTranslateY;
+  const activeScale = animScale ?? internalScale;
+  const activeOpacity = animOpacity ?? (animTranslateY ? 1 : internalOpacity);
+
   return (
-    <Svg
-      width={effectiveWidth}
-      height={effectiveHeight}
-      viewBox="0 0 402 276"
-      fill="none"
+    <Animated.View
+      style={[
+        {
+          width: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: activeOpacity,
+          transform: [
+            { translateY: activeTranslateY },
+            { scale: activeScale },
+          ],
+        },
+        style,
+      ]}
     >
+      <Svg
+        width="100%"
+        height={effectiveHeight}
+        viewBox="0 0 402 356"
+        preserveAspectRatio="xMidYMid slice"
+        fill="none"
+      >
       {/* Sky Blue Background */}
-      <Rect width={402} height={276} fill="#9CD5F4" />
+      <Rect width="100%" height="100%" fill="#9CD5F4" />
 
       {/* Clouds - Left */}
       <G transform="translate(6, 4)">
@@ -180,11 +244,7 @@ export default function Mascot2Svg({ width, height }: Mascot2SvgProps) {
         />
       </G>
 
-      {/* Smooth Convex White Dome Curve at the Bottom */}
-      <Path
-        d="M -10 276 Q 201 216 412 276 L 412 280 L -10 280 Z"
-        fill="#FFFFFF"
-      />
     </Svg>
+  </Animated.View>
   );
 }
