@@ -3,14 +3,15 @@ import {
   View,
   Text,
   TextInput,
-  SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import Button from '@/components/Button';
 import Mascot2Svg from '@/components/Mascot2Svg';
@@ -18,12 +19,12 @@ import Mascot2Svg from '@/components/Mascot2Svg';
 function EyeIcon({ visible }: { visible: boolean }) {
   return (
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Circle cx={12} cy={12} r={7.5} stroke="#262626" strokeWidth={2.4} />
-      <Circle cx={12} cy={12} r={3.4} fill="#262626" />
+      <Circle cx={12} cy={12} r={7.5} stroke="#222222" strokeWidth={2.4} />
+      <Circle cx={12} cy={12} r={3.4} fill="#222222" />
       {!visible && (
         <Path
           d="M4.5 19.5L19.5 4.5"
-          stroke="#262626"
+          stroke="#222222"
           strokeWidth={2.4}
           strokeLinecap="round"
         />
@@ -34,6 +35,9 @@ function EyeIcon({ visible }: { visible: boolean }) {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,29 +51,30 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FEED87' }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FEED87" />
+    <View style={{ flex: 1, backgroundColor: '#9CD5F4' }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#9CD5F4" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: '#FFFFFF' }}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, backgroundColor: '#FFFFFF' }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Top Section with edge-to-edge Mascot2 and built-in white convex curve */}
+          {/* Top Section with edge-to-edge Mascot2 and Sky Blue header */}
           <View
             style={{
-              backgroundColor: '#FEED87',
+              backgroundColor: '#9CD5F4',
               width: '100%',
+              paddingTop: insets.top,
               alignItems: 'center',
               overflow: 'hidden',
             }}
           >
-            <Mascot2Svg width="100%" />
+            <Mascot2Svg width={width} />
           </View>
 
           {/* White Card Content */}
@@ -78,18 +83,18 @@ export default function RegisterScreen() {
               flex: 1,
               backgroundColor: '#FFFFFF',
               paddingHorizontal: 28,
-              paddingTop: 10,
-              paddingBottom: 40,
+              paddingTop: 8,
+              paddingBottom: Math.max(insets.bottom, 24) + 16,
             }}
           >
             <View style={{ width: '100%', maxWidth: 360, alignSelf: 'center' }}>
               {/* Title & Subtitle */}
-              <View style={{ alignItems: 'center', marginBottom: 24 }}>
+              <View style={{ alignItems: 'center', marginBottom: 22 }}>
                 <Text
                   style={{
                     fontFamily: 'ChelseaMarket',
                     fontSize: 25,
-                    color: '#262626',
+                    color: '#222222',
                     textAlign: 'center',
                   }}
                 >
@@ -100,7 +105,7 @@ export default function RegisterScreen() {
                     style={{
                       fontFamily: 'ChelseaMarket',
                       fontSize: 13.5,
-                      color: '#262626',
+                      color: '#222222',
                     }}
                   >
                     Sudah punya akun?{' '}
@@ -127,16 +132,16 @@ export default function RegisterScreen() {
                 {/* Nama Lengkap */}
                 <TextInput
                   style={{
-                    backgroundColor: '#FCE588',
+                    backgroundColor: '#FDEAA1',
                     height: 54,
                     borderRadius: 14,
                     paddingHorizontal: 20,
                     fontFamily: 'ChelseaMarket',
                     fontSize: 15,
-                    color: '#262626',
+                    color: '#222222',
                   }}
                   placeholder="Nama Lengkap"
-                  placeholderTextColor="#262626"
+                  placeholderTextColor="#222222"
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="words"
@@ -145,16 +150,16 @@ export default function RegisterScreen() {
                 {/* Alamat Email */}
                 <TextInput
                   style={{
-                    backgroundColor: '#FCE588',
+                    backgroundColor: '#FDEAA1',
                     height: 54,
                     borderRadius: 14,
                     paddingHorizontal: 20,
                     fontFamily: 'ChelseaMarket',
                     fontSize: 15,
-                    color: '#262626',
+                    color: '#222222',
                   }}
                   placeholder="Alamat Email"
-                  placeholderTextColor="#262626"
+                  placeholderTextColor="#222222"
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -166,16 +171,16 @@ export default function RegisterScreen() {
                   <TextInput
                     style={{
                       flex: 1,
-                      backgroundColor: '#FCE588',
+                      backgroundColor: '#FDEAA1',
                       height: 54,
                       borderRadius: 14,
                       paddingHorizontal: 20,
                       fontFamily: 'ChelseaMarket',
                       fontSize: 15,
-                      color: '#262626',
+                      color: '#222222',
                     }}
                     placeholder="Kata Sandi"
-                    placeholderTextColor="#262626"
+                    placeholderTextColor="#222222"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -187,7 +192,7 @@ export default function RegisterScreen() {
                     style={{
                       width: 54,
                       height: 54,
-                      backgroundColor: '#FCE588',
+                      backgroundColor: '#FDEAA1',
                       borderRadius: 14,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -202,16 +207,16 @@ export default function RegisterScreen() {
                   <TextInput
                     style={{
                       flex: 1,
-                      backgroundColor: '#FCE588',
+                      backgroundColor: '#FDEAA1',
                       height: 54,
                       borderRadius: 14,
                       paddingHorizontal: 20,
                       fontFamily: 'ChelseaMarket',
                       fontSize: 15,
-                      color: '#262626',
+                      color: '#222222',
                     }}
                     placeholder="Konfirmasi Sandi"
-                    placeholderTextColor="#262626"
+                    placeholderTextColor="#222222"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!showConfirmPassword}
@@ -223,7 +228,7 @@ export default function RegisterScreen() {
                     style={{
                       width: 54,
                       height: 54,
-                      backgroundColor: '#FCE588',
+                      backgroundColor: '#FDEAA1',
                       borderRadius: 14,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -234,8 +239,8 @@ export default function RegisterScreen() {
                 </View>
               </View>
 
-              {/* Bottom Button (labeled Masuk according to the design reference) */}
-              <View style={{ marginTop: 36 }}>
+              {/* Bottom Masuk Button */}
+              <View style={{ marginTop: 32 }}>
                 <Button
                   title="Masuk"
                   variant="filled"
@@ -246,7 +251,6 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
-
