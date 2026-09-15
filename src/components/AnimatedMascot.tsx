@@ -401,18 +401,22 @@ export default function AnimatedMascot({
             </G>
 
             {/* 7. Arms by Pose */}
-            {/* Pose 1: Scratch Head (Left UI Screenshot) */}
+            {/* Pose 1: Scratch Head (Matches UI Reference Frame 1) */}
             {currentPose === 'scratch' && (
               <G>
                 {/* Left chubby arm resting at the side */}
                 <Path
                   d="M74 135C58 148 54 176 68 192C80 206 102 198 108 182L122 148Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
                 {/* Right arm reaching up to scratch head */}
                 <Path
                   d="M260 148C296 156 322 136 314 102C308 80 282 66 258 76C244 82 246 102 260 106C275 110 284 122 278 135C272 146 256 148 246 150Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
                 {/* Rounded paw/hand resting on temple */}
                 <Ellipse
@@ -422,22 +426,28 @@ export default function AnimatedMascot({
                   ry={13}
                   transform="rotate(18 258 88)"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
               </G>
             )}
 
-            {/* Pose 2: Shy / Clasping Hands (Middle UI Screenshot) */}
+            {/* Pose 2: Shy / Clasping Hands (Matches UI Reference Frame 2) */}
             {currentPose === 'shy' && (
               <G>
                 {/* Left arm curving inward to chest */}
                 <Path
                   d="M92 148C86 166 98 186 118 192C138 198 162 188 178 176C174 163 162 156 148 158C128 160 110 146 92 148Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
                 {/* Right arm curving inward to chest */}
                 <Path
                   d="M280 148C286 166 274 186 254 192C234 198 210 188 194 176C198 163 210 156 224 158C244 160 262 146 280 148Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
                 {/* Clasped chubby hands meeting at chest */}
                 <Ellipse
@@ -446,8 +456,8 @@ export default function AnimatedMascot({
                   rx={15}
                   ry={12}
                   fill="#F5C857"
-                  stroke="#EAA023"
-                  strokeWidth={2.2}
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
                 <Ellipse
                   cx={199}
@@ -455,43 +465,40 @@ export default function AnimatedMascot({
                   rx={15}
                   ry={12}
                   fill="#F5C857"
-                  stroke="#EAA023"
-                  strokeWidth={2.2}
+                  stroke="#D89B1C"
+                  strokeWidth={1.5}
                 />
               </G>
             )}
 
-            {/* Pose 3: Thumbs Up & Cheering (Right UI Screenshot) */}
+            {/* Pose 3: Thumbs Up & Cheering (Matches UI Reference Frame 3) */}
             {currentPose === 'thumbsUp' && (
               <G>
-                {/* Viewer's Left Arm: THUMBS UP 👍 */}
-                {/* Arm base extending up-left */}
+                {/* Viewer's Left Arm: Organic cartoon thumbs-up mitten hand matching reference */}
                 <Path
-                  d="M106 146C90 146 72 136 60 125L42 138C48 158 74 175 106 164Z"
+                  d="M 98 172 C 85 178 68 172 58 160 C 50 150 52 132 56 116 C 58 102 62 90 70 88 C 74 87 79 88 81 93 C 83 100 81 110 81 118 C 86 120 98 122 104 134 C 108 144 104 156 98 166 C 96 169 94 171 98 172 Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
                 />
-                {/* Fist */}
-                <Circle cx={54} cy={130} r={17} fill="#F5C857" />
-                {/* Prominent Upward Thumb */}
+                {/* Gentle natural palm/thumb fold line */}
                 <Path
-                  d="M62 128C64 110 59 95 50 96C42 97 42 110 46 126Z"
-                  fill="#F5C857"
-                  stroke="#EAA023"
-                  strokeWidth={1.8}
-                />
-                {/* Thumb highlight curve */}
-                <Path
-                  d="M51 100C54 100 58 107 58 116"
-                  stroke="#FFEE91"
-                  strokeWidth={2.5}
+                  d="M 81 118 Q 88 124 96 123"
+                  stroke="#D89B1C"
+                  strokeWidth={1.6}
                   strokeLinecap="round"
+                  fill="none"
                 />
+
                 {/* Viewer's Right Arm extending outward cheerfully */}
                 <Path
-                  d="M272 142C300 144 328 154 348 166C356 172 350 186 338 186C318 182 292 170 268 160Z"
+                  d="M 272 142 C 295 146 322 156 338 166 C 348 172 346 186 334 187 C 316 185 292 174 266 168 Z"
                   fill="#F5C857"
+                  stroke="#D89B1C"
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
                 />
-                <Circle cx={345} cy={172} r={15} fill="#F5C857" />
               </G>
             )}
 

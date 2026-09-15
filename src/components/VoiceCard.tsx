@@ -76,9 +76,11 @@ export default function VoiceCard({
   const micButtonSize = 58;
   // Position mic button nested into the arch notch
   const micButtonTop = height - depth + 6;
+  // The mic button protrudes below the SVG card base; calculate overflow to account for it in the layout
+  const micOverflow = Math.max(0, micButtonTop + micButtonSize - height);
 
   return (
-    <View style={[{ width, alignItems: 'center' }, style]}>
+    <View style={[{ width, alignItems: 'center', paddingBottom: micOverflow }, style]}>
       {/* Notched Card Body */}
       <View style={{ width, height, position: 'relative' }}>
         <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>

@@ -56,8 +56,8 @@ export default function HomeScreen() {
         style={[
           styles.contentContainer,
           {
-            paddingTop: insets.top + Math.max((height - insets.top - insets.bottom - 520) * 0.06, 8),
-            paddingBottom: insets.bottom + 16,
+            paddingTop: insets.top + Math.max((height - insets.top - insets.bottom - 500) * 0.2, 8),
+            paddingBottom: insets.bottom + 70,
           },
         ]}
       >
@@ -98,8 +98,6 @@ export default function HomeScreen() {
               />
             </VoiceCard>
           </View>
-
-          {/* Orange Action Button from Reference UI */}
           <TouchableOpacity
             activeOpacity={0.88}
             style={[styles.actionButton, { width: cardWidth }]}
