@@ -7,32 +7,54 @@ export interface TypewriterTextProps {
   delay?: number;
   style?: StyleProp<TextStyle>;
   showCursor?: boolean;
+  onTypingStateChange?: (isTyping: boolean) => void;
   onComplete?: () => void;
 }
 
 export default function TypewriterText({
   text,
-  speed = 38,
-  delay = 350,
+  speed = 32,
+  delay = 100,
   style,
   showCursor = true,
+  onTypingStateChange,
   onComplete,
 }: TypewriterTextProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cursorIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Store callbacks in refs to prevent unnecessary effect re-runs when parent re-renders
+  const onTypingStateChangeRef = useRef(onTypingStateChange);
+  const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
-    // Reset state when text changes
+    onTypingStateChangeRef.current = onTypingStateChange;
+  }, [onTypingStateChange]);
+
+  // Official React pattern: reset displayedText when text prop changes
+  const [prevText, setPrevText] = useState(text);
+  if (text !== prevText) {
+    setPrevText(text);
     setDisplayedText('');
-    setIsTyping(false);
+  }
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    if (!text) {
+      return;
+    }
 
     let currentIndex = 0;
 
-    const startTyping = () => {
+    const startTimeout = setTimeout(() => {
+      setDisplayedText('');
       setIsTyping(true);
+      onTypingStateChangeRef.current?.(true);
 
       const typeNextChar = () => {
         if (currentIndex < text.length) {
@@ -41,44 +63,42 @@ export default function TypewriterText({
           timeoutRef.current = setTimeout(typeNextChar, speed);
         } else {
           setIsTyping(false);
-          if (onComplete) {
-            onComplete();
-          }
+          onTypingStateChangeRef.current?.(false);
+          onCompleteRef.current?.();
         }
       };
 
       typeNextChar();
-    };
-
-    timeoutRef.current = setTimeout(startTyping, delay);
+    }, delay);
 
     return () => {
+      clearTimeout(startTimeout);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      onTypingStateChangeRef.current?.(false);
     };
-  }, [text, speed, delay, onComplete]);
+  }, [text, speed, delay]);
 
   // Cursor blink effect while typing
   useEffect(() => {
     if (!showCursor || !isTyping) {
-      setCursorVisible(false);
       return;
     }
 
-    cursorIntervalRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       setCursorVisible((prev) => !prev);
     }, 450);
 
     return () => {
-      if (cursorIntervalRef.current) clearInterval(cursorIntervalRef.current);
+      clearInterval(interval);
     };
   }, [isTyping, showCursor]);
+
+  const showCursorEffect = isTyping && showCursor && cursorVisible;
 
   return (
     <Text style={style}>
       {displayedText}
-      {isTyping && showCursor && (
-        <Text style={{ opacity: cursorVisible ? 1 : 0 }}>|</Text>
-      )}
+      {showCursorEffect && <Text style={{ opacity: 1 }}>|</Text>}
     </Text>
   );
 }

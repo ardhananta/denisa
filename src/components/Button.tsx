@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleProp, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
 
 type ButtonVariant = 'filled' | 'outlined';
 
@@ -10,6 +10,8 @@ interface ButtonProps {
   className?: string;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 export default function Button({
@@ -19,6 +21,8 @@ export default function Button({
   className = '',
   style,
   textStyle,
+  disabled = false,
+  loading = false,
 }: ButtonProps) {
   const isFilled = variant === 'filled';
 
@@ -51,13 +55,22 @@ export default function Button({
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled || loading}
       activeOpacity={0.8}
-      style={[defaultContainerStyle, style]}
+      style={[
+        defaultContainerStyle,
+        style,
+        (disabled || loading) && { opacity: 0.65 },
+      ]}
       className={className}
     >
-      <Text style={[defaultTextStyle, textStyle]}>
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator color={isFilled ? '#222222' : '#F5B842'} />
+      ) : (
+        <Text style={[defaultTextStyle, textStyle]}>
+          {title}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }

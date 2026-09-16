@@ -1,22 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import Button from '@/components/Button';
+import Mascot2Svg from '@/components/Mascot2Svg';
+import { apiService } from '@/services/api';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
   useWindowDimensions,
-  Animated,
-  Easing,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
-import Button from '@/components/Button';
-import Mascot2Svg from '@/components/Mascot2Svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 function EyeIcon({ visible }: { visible: boolean }) {
   return (
@@ -54,14 +55,16 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Mascot pop-up animation values (pops up from inside the card to the top)
-  const mascotTranslateY = useRef(new Animated.Value(55)).current;
-  const mascotScale = useRef(new Animated.Value(0.9)).current;
+  const [mascotTranslateY] = useState(() => new Animated.Value(55));
+  const [mascotScale] = useState(() => new Animated.Value(0.9));
 
   // Form transition animation values (smooth fade and slide inside the card)
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const formTranslateY = useRef(new Animated.Value(24)).current;
+  const [formOpacity] = useState(() => new Animated.Value(0));
+  const [formTranslateY] = useState(() => new Animated.Value(24));
 
   // On initial mount: Mascot pops up from inside the card to the top
   useEffect(() => {
@@ -110,13 +113,14 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
         useNativeDriver: true,
       }),
       Animated.timing(mascotTranslateY, {
-        toValue: 200, 
+        toValue: 200,
         duration: 250,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
     ]).start(() => {
       setMode(newMode);
+      setErrorMessage(null);
 
       Animated.parallel([
         Animated.spring(mascotTranslateY, {
@@ -147,9 +151,60 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
     });
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement authentication/registration logic
-    router.replace('/(main)');
+  const validateForm = (): string | null => {
+    const trimmedEmail = email.trim();
+    // RFC 5322 compatible email check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      return 'Format email tidak valid';
+    }
+    if (!password || password.length < 6) {
+      return 'Password minimal 6 karakter';
+    }
+    if (mode === 'register') {
+      const trimmedName = name.trim();
+      if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 100) {
+        return 'Nama wajib diisi (2-100 karakter)';
+      }
+      if (password !== confirmPassword) {
+        return 'Konfirmasi sandi tidak cocok';
+      }
+    }
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    setErrorMessage(null);
+    const err = validateForm();
+    if (err) {
+      setErrorMessage(err);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (mode === 'login') {
+        const res = await apiService.login(email.trim(), password);
+        const user = res.data?.user;
+        if (user && !user.is_profile_completed) {
+          router.replace('/auth/complete-registration');
+        } else {
+          router.replace('/(main)/homepage');
+        }
+      } else {
+        const res = await apiService.register(email.trim(), password, name.trim());
+        const user = res.data?.user;
+        if (user && user.is_profile_completed) {
+          router.replace('/(main)/homepage');
+        } else {
+          router.replace('/auth/complete-registration');
+        }
+      }
+    } catch (apiErr: any) {
+      setErrorMessage(apiErr.message || 'Gagal memproses permintaan.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isLogin = mode === 'login';
@@ -217,133 +272,128 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                 justifyContent: isLogin ? 'space-between' : undefined,
               }}
             >
-            <Animated.View
-              style={{
-                width: '100%',
-                maxWidth: 360,
-                alignSelf: 'center',
-                opacity: formOpacity,
-                transform: [{ translateY: formTranslateY }],
-              }}
-            >
-              {/* Title & Subtitle */}
-              <View style={{ alignItems: 'center', marginBottom: isLogin ? 26 : 22 }}>
-                <Text
-                  style={{
-                    fontFamily: 'ChelseaMarket',
-                    fontSize: 25,
-                    color: '#222222',
-                    textAlign: 'center',
-                  }}
-                >
-                  {isLogin ? 'Masuk' : 'Buat Akun'}
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <Animated.View
+                style={{
+                  width: '100%',
+                  maxWidth: 360,
+                  alignSelf: 'center',
+                  opacity: formOpacity,
+                  transform: [{ translateY: formTranslateY }],
+                }}
+              >
+                {/* Title & Subtitle */}
+                <View style={{ alignItems: 'center', marginBottom: isLogin ? 26 : 22 }}>
                   <Text
                     style={{
                       fontFamily: 'ChelseaMarket',
-                      fontSize: 13.5,
+                      fontSize: 25,
                       color: '#222222',
+                      textAlign: 'center',
                     }}
                   >
-                    {isLogin ? 'Baru mengenal Denisa? ' : 'Sudah punya akun? '}
+                    {isLogin ? 'Masuk' : 'Buat Akun'}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => switchMode(isLogin ? 'register' : 'login')}
-                    activeOpacity={0.7}
-                  >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                     <Text
                       style={{
                         fontFamily: 'ChelseaMarket',
                         fontSize: 13.5,
-                        color: '#F5B842',
+                        color: '#222222',
                       }}
                     >
-                      {isLogin ? 'Buat akun' : 'Masuk'}
+                      {isLogin ? 'Baru mengenal Denisa? ' : 'Sudah punya akun? '}
                     </Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => switchMode(isLogin ? 'register' : 'login')}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: 'ChelseaMarket',
+                          fontSize: 13.5,
+                          color: '#F5B842',
+                        }}
+                      >
+                        {isLogin ? 'Buat akun' : 'Masuk'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
 
-              {/* Form Inputs */}
-              <View style={{ gap: 14 }}>
-                {/* Name Input (Register Only) */}
-                {!isLogin && (
-                  <TextInput
+                {/* Error Banner */}
+                {errorMessage && (
+                  <View
                     style={{
-                      backgroundColor: '#FDEAA1',
-                      height: 54,
-                      borderRadius: 14,
-                      paddingHorizontal: 20,
-                      fontFamily: 'ChelseaMarket',
-                      fontSize: 15,
-                      color: '#222222',
-                    }}
-                    placeholder="Nama Lengkap"
-                    placeholderTextColor="#222222"
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
-                  />
-                )}
-
-                {/* Email Input */}
-                <TextInput
-                  style={{
-                    backgroundColor: '#FDEAA1',
-                    height: 54,
-                    borderRadius: 14,
-                    paddingHorizontal: 20,
-                    fontFamily: 'ChelseaMarket',
-                    fontSize: 15,
-                    color: '#222222',
-                  }}
-                  placeholder="Alamat Email"
-                  placeholderTextColor="#222222"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-
-                {/* Password Input + Eye Toggle */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      backgroundColor: '#FDEAA1',
-                      height: 54,
-                      borderRadius: 14,
-                      paddingHorizontal: 20,
-                      fontFamily: 'ChelseaMarket',
-                      fontSize: 15,
-                      color: '#222222',
-                    }}
-                    placeholder="Kata Sandi"
-                    placeholderTextColor="#222222"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                  />
-
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    activeOpacity={0.7}
-                    style={{
-                      width: 54,
-                      height: 54,
-                      backgroundColor: '#FDEAA1',
-                      borderRadius: 14,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      backgroundColor: '#FDE8E8',
+                      borderRadius: 12,
+                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                      marginBottom: 14,
+                      borderLeftWidth: 4,
+                      borderLeftColor: '#E53E3E',
                     }}
                   >
-                    <EyeIcon visible={showPassword} />
-                  </TouchableOpacity>
-                </View>
+                    <Text
+                      style={{
+                        fontFamily: 'ChelseaMarket',
+                        fontSize: 13,
+                        color: '#C53030',
+                        lineHeight: 18,
+                      }}
+                    >
+                      {errorMessage}
+                    </Text>
+                  </View>
+                )}
 
-                {/* Confirm Password Input + Eye Toggle (Register Only) */}
-                {!isLogin && (
+                {/* Form Inputs */}
+                <View style={{ gap: 14 }}>
+                  {/* Name Input (Register Only) */}
+                  {!isLogin && (
+                    <TextInput
+                      style={{
+                        backgroundColor: '#FDEAA1',
+                        height: 54,
+                        borderRadius: 14,
+                        paddingHorizontal: 20,
+                        fontFamily: 'ChelseaMarket',
+                        fontSize: 15,
+                        color: '#222222',
+                      }}
+                      placeholder="Nama Lengkap"
+                      placeholderTextColor="#222222"
+                      value={name}
+                      onChangeText={(val) => {
+                        setName(val);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      autoCapitalize="words"
+                    />
+                  )}
+
+                  {/* Email Input */}
+                  <TextInput
+                    style={{
+                      backgroundColor: '#FDEAA1',
+                      height: 54,
+                      borderRadius: 14,
+                      paddingHorizontal: 20,
+                      fontFamily: 'ChelseaMarket',
+                      fontSize: 15,
+                      color: '#222222',
+                    }}
+                    placeholder="Alamat Email"
+                    placeholderTextColor="#222222"
+                    value={email}
+                    onChangeText={(val) => {
+                      setEmail(val);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+
+                  {/* Password Input + Eye Toggle */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <TextInput
                       style={{
@@ -356,15 +406,18 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                         fontSize: 15,
                         color: '#222222',
                       }}
-                      placeholder="Konfirmasi Sandi"
+                      placeholder="Kata Sandi"
                       placeholderTextColor="#222222"
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      secureTextEntry={!showConfirmPassword}
+                      value={password}
+                      onChangeText={(val) => {
+                        setPassword(val);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      secureTextEntry={!showPassword}
                     />
 
                     <TouchableOpacity
-                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onPress={() => setShowPassword(!showPassword)}
                       activeOpacity={0.7}
                       style={{
                         width: 54,
@@ -375,23 +428,65 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
                         justifyContent: 'center',
                       }}
                     >
-                      <EyeIcon visible={showConfirmPassword} />
+                      <EyeIcon visible={showPassword} />
                     </TouchableOpacity>
                   </View>
-                )}
-              </View>
 
-              {/* Action Button */}
-              <View style={{ marginTop: isLogin ? 40 : 32 }}>
-                <Button
-                  title={isLogin ? 'Masuk' : 'Daftar'}
-                  variant="filled"
-                  onPress={handleSubmit}
-                />
-              </View>
-            </Animated.View>
+                  {/* Confirm Password Input + Eye Toggle (Register Only) */}
+                  {!isLogin && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <TextInput
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#FDEAA1',
+                          height: 54,
+                          borderRadius: 14,
+                          paddingHorizontal: 20,
+                          fontFamily: 'ChelseaMarket',
+                          fontSize: 15,
+                          color: '#222222',
+                        }}
+                        placeholder="Konfirmasi Sandi"
+                        placeholderTextColor="#222222"
+                        value={confirmPassword}
+                        onChangeText={(val) => {
+                          setConfirmPassword(val);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        secureTextEntry={!showConfirmPassword}
+                      />
+
+                      <TouchableOpacity
+                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                        activeOpacity={0.7}
+                        style={{
+                          width: 54,
+                          height: 54,
+                          backgroundColor: '#FDEAA1',
+                          borderRadius: 14,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <EyeIcon visible={showConfirmPassword} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+
+                {/* Action Button */}
+                <View style={{ marginTop: isLogin ? 32 : 24 }}>
+                  <Button
+                    title={isLogin ? 'Masuk' : 'Daftar'}
+                    variant="filled"
+                    loading={isLoading}
+                    disabled={isLoading}
+                    onPress={handleSubmit}
+                  />
+                </View>
+              </Animated.View>
+            </View>
           </View>
-        </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

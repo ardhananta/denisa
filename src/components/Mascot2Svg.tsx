@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWindowDimensions, Animated, StyleProp, ViewStyle, Easing } from 'react-native';
 import Svg, { Path, Circle, Mask, G, Ellipse, Rect } from 'react-native-svg';
 
@@ -26,14 +26,14 @@ export default function Mascot2Svg({
   const calculatedHeight = (effectiveWidth / 402) * 356;
   const effectiveHeight = height ?? calculatedHeight;
 
-  // Internal bottom-to-top pop-up animation values
-  const internalTranslateY = useRef(new Animated.Value(45)).current;
-  const internalOpacity = useRef(new Animated.Value(0)).current;
-  const internalScale = useRef(new Animated.Value(0.92)).current;
+  // Internal bottom-to-top pop-up animation values using useState for React 19
+  const [internalTranslateY] = useState(() => new Animated.Value(45));
+  const [internalOpacity] = useState(() => new Animated.Value(0));
+  const [internalScale] = useState(() => new Animated.Value(0.92));
 
   useEffect(() => {
     // If parent controls animation via props, don't run internal animation
-    if (animTranslateY) return;
+    if (animTranslateY || !animated) return;
 
     Animated.parallel([
       Animated.spring(internalTranslateY, {
@@ -55,7 +55,7 @@ export default function Mascot2Svg({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [animTranslateY, internalTranslateY, internalOpacity, internalScale]);
+  }, [animated, animTranslateY, internalTranslateY, internalOpacity, internalScale]);
 
   const activeTranslateY = animTranslateY ?? internalTranslateY;
   const activeScale = animScale ?? internalScale;

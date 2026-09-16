@@ -1,18 +1,17 @@
-import React from 'react';
+import Button from '@/components/Button';
+import MascotSvg from '@/components/MascotSvg';
+import { useRouter } from 'expo-router';
 import {
-  View,
+  StatusBar,
   Text,
   useWindowDimensions,
-  StatusBar,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MascotSvg from '@/components/MascotSvg';
-import Button from '@/components/Button';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
   // Mascot scale: spans nicely across the screen bottom

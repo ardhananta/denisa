@@ -8,6 +8,10 @@ export default function MainLayout() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="homepage" />
+      <Stack.Screen name="mchat" />
+      <Stack.Screen name="quick-answers" />
+      <Stack.Screen name="assessment-result" />
     </Stack>
   );
 }
