@@ -1,10 +1,12 @@
 import Button from '@/components/Button';
-import MascotSvg from '@/components/MascotSvg';
+import Mascot2Svg from '@/components/Mascot2Svg';
 import { apiService, CompleteRegistrationPayload } from '@/services/api';
 import { storageService } from '@/services/storage';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -36,7 +38,42 @@ export default function CompleteRegistrationScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const mascotWidth = Math.min(Math.max(width * 0.6, 210), 280);
+  // Mascot pop-up animation values (matches login & register)
+  const [mascotTranslateY] = useState(() => new Animated.Value(55));
+  const [mascotScale] = useState(() => new Animated.Value(0.9));
+
+  // Form transition animation values (smooth fade and slide up)
+  const [formOpacity] = useState(() => new Animated.Value(0));
+  const [formTranslateY] = useState(() => new Animated.Value(24));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(mascotTranslateY, {
+        toValue: 0,
+        friction: 7,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+      Animated.spring(mascotScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+      Animated.timing(formOpacity, {
+        toValue: 1,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(formTranslateY, {
+        toValue: 0,
+        friction: 8,
+        tension: 55,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [mascotTranslateY, mascotScale, formOpacity, formTranslateY]);
 
   // Live age calculation
   const calculatedAge = useMemo(() => {
@@ -207,54 +244,41 @@ export default function CompleteRegistrationScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Header with Denis Mascot */}
+          {/* Header with Mascot2 & spring animation (Exact same layout as login & register) */}
           <View
             style={{
               backgroundColor: '#9CD5F4',
               width: '100%',
-              paddingTop: insets.top + 8,
-              paddingBottom: 16,
+              paddingTop: insets.top,
               alignItems: 'center',
+              zIndex: 0,
             }}
           >
-            <MascotSvg width={mascotWidth} />
-            <Text
-              style={{
-                fontFamily: 'ChelseaMarket',
-                fontSize: 22,
-                color: '#222222',
-                marginTop: 8,
-                textAlign: 'center',
-              }}
-            >
-              Lengkapi Data Anak
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'ChelseaMarket',
-                fontSize: 13,
-                color: '#333333',
-                textAlign: 'center',
-                marginTop: 2,
-                paddingHorizontal: 24,
-              }}
-            >
-              Informasi ini digunakan untuk menyesuaikan skrining tumbuh kembang
-            </Text>
+            <Mascot2Svg
+              width={width}
+              animTranslateY={mascotTranslateY}
+              animScale={mascotScale}
+            />
           </View>
 
-          {/* Form Card Container */}
-          <View style={{ flex: 1, zIndex: 1 }}>
-            {/* Smooth convex dome arch */}
+          {/* Form Card Container with Curved Dome Header overlapping Mascot */}
+          <View
+            style={{
+              flex: 1,
+              marginTop: -110,
+              zIndex: 1,
+            }}
+          >
+            {/* Smooth convex dome arch across the entire width */}
             <Svg
               width="100%"
-              height={40}
-              viewBox="0 0 400 40"
+              height={50}
+              viewBox="0 0 400 50"
               preserveAspectRatio="none"
               style={{ marginBottom: -1 }}
             >
               <Path
-                d="M 0 40 Q 200 0 400 40 L 400 42 L 0 42 Z"
+                d="M 0 50 Q 200 0 400 50 L 400 52 L 0 52 Z"
                 fill="#FFFFFF"
               />
             </Svg>
@@ -264,12 +288,46 @@ export default function CompleteRegistrationScreen() {
               style={{
                 flex: 1,
                 backgroundColor: '#FFFFFF',
-                paddingHorizontal: 26,
-                paddingTop: 8,
+                paddingHorizontal: 28,
+                paddingTop: 14,
                 paddingBottom: Math.max(insets.bottom, 24) + 20,
               }}
             >
-              <View style={{ width: '100%', maxWidth: 360, alignSelf: 'center' }}>
+              <Animated.View
+                style={{
+                  width: '100%',
+                  maxWidth: 360,
+                  alignSelf: 'center',
+                  opacity: formOpacity,
+                  transform: [{ translateY: formTranslateY }],
+                }}
+              >
+                {/* Title & Subtitle */}
+                <View style={{ alignItems: 'center', marginBottom: 22 }}>
+                  <Text
+                    style={{
+                      fontFamily: 'ChelseaMarket',
+                      fontSize: 25,
+                      color: '#222222',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Lengkapi Data Anak
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'ChelseaMarket',
+                      fontSize: 13.5,
+                      color: '#222222',
+                      textAlign: 'center',
+                      marginTop: 4,
+                      lineHeight: 18,
+                    }}
+                  >
+                    Informasi ini digunakan untuk menyesuaikan skrining tumbuh kembang
+                  </Text>
+                </View>
+
                 {/* Error Banner */}
                 {errorMessage && (
                   <View
@@ -296,23 +354,24 @@ export default function CompleteRegistrationScreen() {
                   </View>
                 )}
 
+                {/* Form Inputs */}
                 {/* 1. Nama Lengkap Anak */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Nama Lengkap Anak <Text style={{ color: '#E53E3E' }}>*</Text>
                   </Text>
                   <TextInput
                     style={{
                       backgroundColor: '#FDEAA1',
-                      height: 52,
+                      height: 54,
                       borderRadius: 14,
-                      paddingHorizontal: 18,
+                      paddingHorizontal: 20,
                       fontFamily: 'ChelseaMarket',
                       fontSize: 15,
                       color: '#222222',
                     }}
                     placeholder="Contoh: Adik Kenzo"
-                    placeholderTextColor="#777777"
+                    placeholderTextColor="#888888"
                     value={childName}
                     onChangeText={(val) => {
                       setChildName(val);
@@ -324,7 +383,7 @@ export default function CompleteRegistrationScreen() {
 
                 {/* 2. Tanggal Lahir (HH / BB / TTTT) */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Tanggal Lahir Anak <Text style={{ color: '#E53E3E' }}>*</Text>
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -332,7 +391,7 @@ export default function CompleteRegistrationScreen() {
                       style={{
                         flex: 1,
                         backgroundColor: '#FDEAA1',
-                        height: 52,
+                        height: 54,
                         borderRadius: 14,
                         textAlign: 'center',
                         fontFamily: 'ChelseaMarket',
@@ -340,18 +399,16 @@ export default function CompleteRegistrationScreen() {
                         color: '#222222',
                       }}
                       placeholder="HH"
-                      placeholderTextColor="#777777"
+                      placeholderTextColor="#888888"
                       keyboardType="number-pad"
                       maxLength={2}
                       value={day}
                       onChangeText={(val) => {
-                        // Only allow digits
                         const digits = val.replace(/[^0-9]/g, '');
                         if (digits === '') {
                           setDay('');
                         } else {
                           const num = parseInt(digits, 10);
-                          // Clamp: if first digit > 3 it can only be 1-9, max 31
                           if (num < 1) {
                             setDay(digits.length === 1 ? digits : '1');
                           } else if (num > 31) {
@@ -367,7 +424,7 @@ export default function CompleteRegistrationScreen() {
                       style={{
                         flex: 1,
                         backgroundColor: '#FDEAA1',
-                        height: 52,
+                        height: 54,
                         borderRadius: 14,
                         textAlign: 'center',
                         fontFamily: 'ChelseaMarket',
@@ -375,18 +432,16 @@ export default function CompleteRegistrationScreen() {
                         color: '#222222',
                       }}
                       placeholder="BB"
-                      placeholderTextColor="#777777"
+                      placeholderTextColor="#888888"
                       keyboardType="number-pad"
                       maxLength={2}
                       value={month}
                       onChangeText={(val) => {
-                        // Only allow digits
                         const digits = val.replace(/[^0-9]/g, '');
                         if (digits === '') {
                           setMonth('');
                         } else {
                           const num = parseInt(digits, 10);
-                          // Clamp: max 12
                           if (num < 1) {
                             setMonth(digits.length === 1 ? digits : '1');
                           } else if (num > 12) {
@@ -400,9 +455,9 @@ export default function CompleteRegistrationScreen() {
                     />
                     <TextInput
                       style={{
-                        flex: 1.5,
+                        flex: 1.4,
                         backgroundColor: '#FDEAA1',
-                        height: 52,
+                        height: 54,
                         borderRadius: 14,
                         textAlign: 'center',
                         fontFamily: 'ChelseaMarket',
@@ -410,7 +465,7 @@ export default function CompleteRegistrationScreen() {
                         color: '#222222',
                       }}
                       placeholder="TTTT"
-                      placeholderTextColor="#777777"
+                      placeholderTextColor="#888888"
                       keyboardType="number-pad"
                       maxLength={4}
                       value={year}
@@ -498,7 +553,7 @@ export default function CompleteRegistrationScreen() {
 
                 {/* 3. Jenis Kelamin */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Jenis Kelamin <Text style={{ color: '#E53E3E' }}>*</Text>
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -510,7 +565,7 @@ export default function CompleteRegistrationScreen() {
                       }}
                       style={{
                         flex: 1,
-                        height: 50,
+                        height: 54,
                         borderRadius: 14,
                         backgroundColor: gender === 'laki-laki' ? '#9CD5F4' : '#F4F4F4',
                         borderWidth: 2,
@@ -538,7 +593,7 @@ export default function CompleteRegistrationScreen() {
                       }}
                       style={{
                         flex: 1,
-                        height: 50,
+                        height: 54,
                         borderRadius: 14,
                         backgroundColor: gender === 'perempuan' ? '#FBCFE8' : '#F4F4F4',
                         borderWidth: 2,
@@ -562,21 +617,21 @@ export default function CompleteRegistrationScreen() {
 
                 {/* 4. Usia Gestasi (Opsional) */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Usia Gestasi (Opsional, 20–44 minggu)
                   </Text>
                   <TextInput
                     style={{
                       backgroundColor: '#FDEAA1',
-                      height: 52,
+                      height: 54,
                       borderRadius: 14,
-                      paddingHorizontal: 18,
+                      paddingHorizontal: 20,
                       fontFamily: 'ChelseaMarket',
                       fontSize: 15,
                       color: '#222222',
                     }}
                     placeholder="Contoh: 39 (minggu)"
-                    placeholderTextColor="#777777"
+                    placeholderTextColor="#888888"
                     keyboardType="number-pad"
                     maxLength={2}
                     value={gestationalWeeks}
@@ -589,15 +644,15 @@ export default function CompleteRegistrationScreen() {
 
                 {/* 5. Catatan / Kondisi Lahir (Opsional) */}
                 <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Catatan Khusus (Opsional)
                   </Text>
                   <TextInput
                     style={{
                       backgroundColor: '#FDEAA1',
-                      minHeight: 65,
+                      minHeight: 70,
                       borderRadius: 14,
-                      paddingHorizontal: 18,
+                      paddingHorizontal: 20,
                       paddingVertical: 12,
                       fontFamily: 'ChelseaMarket',
                       fontSize: 14,
@@ -605,16 +660,16 @@ export default function CompleteRegistrationScreen() {
                       textAlignVertical: 'top',
                     }}
                     placeholder="Lahir cukup bulan, aktif dan sehat..."
-                    placeholderTextColor="#777777"
+                    placeholderTextColor="#888888"
                     multiline
                     value={notes}
                     onChangeText={setNotes}
                   />
                 </View>
 
-                {/* 6. Pilihan Instrumen Skrining (Opsional) */}
-                <View style={{ marginBottom: 22 }}>
-                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#444444', marginBottom: 6 }}>
+                {/* 6. Pilihan Instrumen Skrining */}
+                <View style={{ marginBottom: 24 }}>
+                  <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 13.5, color: '#222222', marginBottom: 6 }}>
                     Instrumen Skrining
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -622,16 +677,18 @@ export default function CompleteRegistrationScreen() {
                       onPress={() => setInstrumentType('')}
                       style={{
                         flex: 1,
-                        paddingVertical: 10,
-                        borderRadius: 12,
-                        backgroundColor: instrumentType === '' ? '#F3BE46' : '#F4F4F4',
+                        paddingVertical: 12,
+                        borderRadius: 14,
+                        backgroundColor: instrumentType === '' ? '#F5B842' : '#F4F4F4',
+                        borderWidth: 1.5,
+                        borderColor: instrumentType === '' ? '#E0A330' : '#E2E2E2',
                         alignItems: 'center',
                       }}
                     >
                       <Text
                         style={{
                           fontFamily: 'ChelseaMarket',
-                          fontSize: 12,
+                          fontSize: 12.5,
                           color: instrumentType === '' ? '#FFFFFF' : '#666666',
                         }}
                       >
@@ -643,16 +700,18 @@ export default function CompleteRegistrationScreen() {
                       onPress={() => setInstrumentType('mchat_rf')}
                       style={{
                         flex: 1.2,
-                        paddingVertical: 10,
-                        borderRadius: 12,
-                        backgroundColor: instrumentType === 'mchat_rf' ? '#F3BE46' : '#F4F4F4',
+                        paddingVertical: 12,
+                        borderRadius: 14,
+                        backgroundColor: instrumentType === 'mchat_rf' ? '#F5B842' : '#F4F4F4',
+                        borderWidth: 1.5,
+                        borderColor: instrumentType === 'mchat_rf' ? '#E0A330' : '#E2E2E2',
                         alignItems: 'center',
                       }}
                     >
                       <Text
                         style={{
                           fontFamily: 'ChelseaMarket',
-                          fontSize: 12,
+                          fontSize: 12.5,
                           color: instrumentType === 'mchat_rf' ? '#FFFFFF' : '#666666',
                         }}
                       >
@@ -664,16 +723,18 @@ export default function CompleteRegistrationScreen() {
                       onPress={() => setInstrumentType('csbs_dp')}
                       style={{
                         flex: 1.1,
-                        paddingVertical: 10,
-                        borderRadius: 12,
-                        backgroundColor: instrumentType === 'csbs_dp' ? '#F3BE46' : '#F4F4F4',
+                        paddingVertical: 12,
+                        borderRadius: 14,
+                        backgroundColor: instrumentType === 'csbs_dp' ? '#F5B842' : '#F4F4F4',
+                        borderWidth: 1.5,
+                        borderColor: instrumentType === 'csbs_dp' ? '#E0A330' : '#E2E2E2',
                         alignItems: 'center',
                       }}
                     >
                       <Text
                         style={{
                           fontFamily: 'ChelseaMarket',
-                          fontSize: 12,
+                          fontSize: 12.5,
                           color: instrumentType === 'csbs_dp' ? '#FFFFFF' : '#666666',
                         }}
                       >
@@ -683,17 +744,37 @@ export default function CompleteRegistrationScreen() {
                   </View>
                 </View>
 
-                {/* Submit Action */}
-                <Button
-                  title="Mulai Skrining Sekarang"
-                  variant="filled"
-                  loading={isLoading}
-                  disabled={isLoading}
-                  onPress={handleSubmit}
-                  style={{ backgroundColor: '#F5B842' }}
-                  textStyle={{ color: '#FFFFFF' }}
-                />
-              </View>
+                {/* Action Button - Identical to Login/Register button */}
+                <View style={{ marginTop: 8 }}>
+                  <Button
+                    title="Mulai Skrining Sekarang"
+                    variant="filled"
+                    loading={isLoading}
+                    disabled={isLoading}
+                    onPress={handleSubmit}
+                  />
+                </View>
+
+                {/* Back to login / Switch Account */}
+                <TouchableOpacity
+                  onPress={async () => {
+                    await storageService.clearAll();
+                    router.replace('/auth/login');
+                  }}
+                  activeOpacity={0.7}
+                  style={{ marginTop: 16, alignItems: 'center', paddingVertical: 6 }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: 'ChelseaMarket',
+                      fontSize: 13.5,
+                      color: '#F5B842',
+                    }}
+                  >
+                    Keluar / Ganti Akun
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
           </View>
         </ScrollView>

@@ -1,5 +1,12 @@
 import Button from '@/components/Button';
+import { Card1Visual, Card2Visual } from '@/components/CardVisuals';
 import MascotSvg from '@/components/MascotSvg';
+import {
+  HeartPulseIcon,
+  HomeSmileIcon,
+  SparkleDeco,
+  UserNavIcon,
+} from '@/components/NavIcons';
 import { apiService } from '@/services/api';
 import { storageService, StoredUser } from '@/services/storage';
 import { useRouter } from 'expo-router';
@@ -17,7 +24,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, {
-  Circle,
   ClipPath,
   Defs,
   G,
@@ -25,59 +31,6 @@ import Svg, {
   Rect,
   Image as SvgImage,
 } from 'react-native-svg';
-
-// Custom Navigation Icons matching reference
-function HomeIcon({ active }: { active?: boolean }) {
-  const bodyColor = active ? '#E2852E' : '#D48D1A';
-  const smileColor = active ? '#FFFFFF' : '#FDE882';
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 2.5L3.5 9.8C2.8 10.4 2.5 11.2 2.5 12V19.5C2.5 20.9 3.6 22 5 22H19C20.4 22 21.5 20.9 21.5 19.5V12C21.5 11.2 21.2 10.4 20.5 9.8L12 2.5Z"
-        fill={bodyColor}
-      />
-      <Path
-        d="M9 14.5C9.8 16.2 10.8 17 12 17C13.2 17 14.2 16.2 15 14.5"
-        stroke={smileColor}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-function ProgressIcon({ active }: { active?: boolean }) {
-  const heartColor = active ? '#E2852E' : '#D48D1A';
-  const pulseColor = active ? '#FFFFFF' : '#FDE882';
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"
-        fill={heartColor}
-      />
-      <Path
-        d="M5.5 9.5H8.2L9.8 6.5L13.2 13L14.8 9.5H18.5"
-        stroke={pulseColor}
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-function ProfileIcon({ active }: { active?: boolean }) {
-  const color = active ? '#E2852E' : '#D48D1A';
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Circle cx={12} cy={7.5} r={4.5} fill={color} />
-      <Path
-        d="M4.5 19.5C4.5 16.2 7.8 14.2 12 14.2C16.2 14.2 19.5 16.2 19.5 19.5V20.5C19.5 21.1 19 21.5 18.4 21.5H5.6C5 21.5 4.5 21.1 4.5 20.5V19.5Z"
-        fill={color}
-      />
-    </Svg>
-  );
-}
 
 export default function HomepageScreen() {
   const router = useRouter();
@@ -104,7 +57,6 @@ export default function HomepageScreen() {
       if (child) {
         setActiveChild(child);
       } else {
-        // Fetch children from API if not yet in storage
         try {
           const res = await apiService.getChildren();
           if (res.data && res.data.length > 0) {
@@ -152,6 +104,20 @@ export default function HomepageScreen() {
     router.push('/(main)/mchat');
   };
 
+  const handleGameTherapy = () => {
+    Alert.alert(
+      'Game Terapi Denisa',
+      'Fitur Game Terapi membantu stimulasi motorik, komunikasi, dan sensorik ananda secara interaktif.\n\nApakah Anda ingin memulai skrining M-CHAT terlebih dahulu untuk rekomendasi terapi yang tepat?',
+      [
+        { text: 'Nanti', style: 'cancel' },
+        {
+          text: 'Mulai Skrining',
+          onPress: handleStartScreening,
+        },
+      ]
+    );
+  };
+
   const handleLogout = async () => {
     Alert.alert('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari akun Denisa?', [
       { text: 'Batal', style: 'cancel' },
@@ -172,11 +138,12 @@ export default function HomepageScreen() {
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#82D2FB" />
 
+      {/* Tab 1: Beranda (Main Reference Dashboard) */}
       {activeTab === 'beranda' && (
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: Math.max(insets.bottom, 16) + 88,
+            paddingBottom: Math.max(insets.bottom, 16) + 90,
             backgroundColor: '#FFFFFF',
           }}
           showsVerticalScrollIndicator={false}
@@ -188,6 +155,7 @@ export default function HomepageScreen() {
               width: width,
               height: bannerHeight,
               position: 'relative',
+              backgroundColor: '#FFFFFF',
             }}
           >
             {/* Vector-Clipped Hero Banner */}
@@ -220,7 +188,7 @@ export default function HomepageScreen() {
             <View
               style={{
                 position: 'absolute',
-                top: Math.max(insets.top + 4, 16),
+                top: Math.max(insets.top + 8, 20),
                 left: 16,
                 right: 16,
                 alignItems: 'center',
@@ -230,11 +198,11 @@ export default function HomepageScreen() {
               <Text
                 style={{
                   fontFamily: 'ChelseaMarket',
-                  fontSize: 19,
+                  fontSize: Math.min(20, width * 0.052),
                   color: '#FFFFFF',
                   textAlign: 'center',
-                  lineHeight: 26,
-                  textShadowColor: 'rgba(0, 0, 0, 0.22)',
+                  lineHeight: 27,
+                  textShadowColor: 'rgba(0, 0, 0, 0.25)',
                   textShadowOffset: { width: 0, height: 1.5 },
                   textShadowRadius: 3,
                 }}
@@ -244,11 +212,11 @@ export default function HomepageScreen() {
               <Text
                 style={{
                   fontFamily: 'ChelseaMarket',
-                  fontSize: 19,
+                  fontSize: Math.min(20, width * 0.052),
                   color: '#FFFFFF',
                   textAlign: 'center',
-                  lineHeight: 26,
-                  textShadowColor: 'rgba(0, 0, 0, 0.22)',
+                  lineHeight: 27,
+                  textShadowColor: 'rgba(0, 0, 0, 0.25)',
                   textShadowOffset: { width: 0, height: 1.5 },
                   textShadowRadius: 3,
                 }}
@@ -257,11 +225,11 @@ export default function HomepageScreen() {
               </Text>
             </View>
 
-            {/* Centered 3D "Mulai" Button on Rollercoaster Cart */}
+            {/* Centered White Pill "Mulai" Button on Rollercoaster Cart */}
             <View
               style={{
                 position: 'absolute',
-                top: 236 * scale,
+                top: 234 * scale,
                 left: 0,
                 right: 0,
                 alignItems: 'center',
@@ -272,104 +240,105 @@ export default function HomepageScreen() {
                 activeOpacity={0.85}
                 onPress={handleStartScreening}
                 style={{
-                  backgroundColor: '#F3BE46',
-                  borderRadius: 28,
-                  paddingBottom: 5,
+                  backgroundColor: '#FFFFFF',
+                  paddingHorizontal: 42,
+                  paddingVertical: 9,
+                  borderRadius: 24,
+                  borderWidth: 1.5,
+                  borderColor: '#EFEFEF',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   shadowColor: '#000000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 6,
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.16,
+                  shadowRadius: 5,
                   elevation: 4,
                 }}
               >
-                <View
+                <Text
                   style={{
-                    backgroundColor: '#FFFFFF',
-                    paddingHorizontal: 42,
-                    paddingVertical: 10,
-                    borderRadius: 26,
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    fontFamily: 'ChelseaMarket',
+                    fontSize: 17,
+                    color: '#262626',
+                    textAlign: 'center',
                   }}
                 >
-                  <Text
-                    style={{
-                      fontFamily: 'ChelseaMarket',
-                      fontSize: 18,
-                      color: '#262626',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Mulai
-                  </Text>
-                </View>
+                  Mulai
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Layanan Denisa Section */}
-          <View style={{ paddingTop: 18 }}>
+          {/* Section: Pantau Perkembangan Anak */}
+          <View style={{ paddingTop: 20, paddingHorizontal: 16 }}>
             <Text
               style={{
                 fontFamily: 'ChelseaMarket',
-                fontSize: 22,
+                fontSize: 20,
                 color: '#262626',
                 marginBottom: 16,
-                paddingHorizontal: 24,
+                paddingHorizontal: 4,
               }}
             >
-              Layanan Denisa
+              Pantau Perkembangan Anak
             </Text>
 
-            {/* Service Cards */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 24,
-                gap: 16,
+            {/* 2-Column Grid Cards matching reference UI */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                gap: 14,
               }}
             >
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleStartScreening}
-                style={styles.serviceCard}
-              >
-                <Text style={styles.serviceTag}>M-CHAT-R/F</Text>
-                <Text style={styles.serviceTitle}>Skrining Dini ASD</Text>
-                <Text style={styles.serviceDesc}>
-                  Wawancara klinis cerdas berbasis suara bersama Denis
-                </Text>
-              </TouchableOpacity>
+              {/* Card 1: Deteksi Dini */}
+              <View style={styles.dashboardCard}>
+                {/* Illustration Top Visual */}
+                <Card1Visual height={175} />
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => router.push('/auth/complete-registration')}
-                style={[styles.serviceCard, { backgroundColor: '#FDEAA1' }]}
-              >
-                <Text style={[styles.serviceTag, { color: '#B7791F', backgroundColor: '#FEFCBF' }]}>
-                  Profil Anak
-                </Text>
-                <Text style={styles.serviceTitle}>Data Tumbuh Kembang</Text>
-                <Text style={styles.serviceDesc}>
-                  Pantau usia gestasi, catatan khusus, dan milestone perkembangan
-                </Text>
-              </TouchableOpacity>
+                {/* Content Section */}
+                <View style={styles.cardContent}>
+                  <View>
+                    <Text style={styles.cardTitle}>Deteksi Dini</Text>
+                    <Text style={styles.cardDescription}>
+                      Mulai kenali gejala dini tanda awal autisme pada anak.
+                    </Text>
+                  </View>
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => setActiveTab('proggres')}
-                style={[styles.serviceCard, { backgroundColor: '#FED7D7' }]}
-              >
-                <Text style={[styles.serviceTag, { color: '#9B2C2C', backgroundColor: '#FFF5F5' }]}>
-                  Laporan
-                </Text>
-                <Text style={styles.serviceTitle}>Riwayat Klinis</Text>
-                <Text style={styles.serviceDesc}>
-                  Akses rekomendasi dokter anak dan rangkuman risiko kapan saja
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={handleStartScreening}
+                    style={styles.cardOutlinedBtn}
+                  >
+                    <Text style={styles.cardOutlinedBtnText}>Mulai</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Card 2: Game Terapi */}
+              <View style={styles.dashboardCard}>
+                {/* Illustration Top Visual */}
+                <Card2Visual height={175} />
+
+                {/* Content Section */}
+                <View style={styles.cardContent}>
+                  <View>
+                    <Text style={styles.cardTitle}>Game Terapi</Text>
+                    <Text style={styles.cardDescription}>
+                      Terapkan terapi untuk membantu pertumbuhan anak
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={handleGameTherapy}
+                    style={styles.cardOutlinedBtn}
+                  >
+                    <Text style={styles.cardOutlinedBtnText}>Mulai</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
           </View>
         </ScrollView>
       )}
@@ -379,7 +348,7 @@ export default function HomepageScreen() {
         <ScrollView
           contentContainerStyle={{
             paddingTop: insets.top + 20,
-            paddingBottom: Math.max(insets.bottom, 16) + 88,
+            paddingBottom: Math.max(insets.bottom, 16) + 90,
             paddingHorizontal: 24,
           }}
           showsVerticalScrollIndicator={false}
@@ -449,7 +418,7 @@ export default function HomepageScreen() {
         <ScrollView
           contentContainerStyle={{
             paddingTop: insets.top + 20,
-            paddingBottom: Math.max(insets.bottom, 16) + 88,
+            paddingBottom: Math.max(insets.bottom, 16) + 90,
             paddingHorizontal: 24,
           }}
           showsVerticalScrollIndicator={false}
@@ -460,8 +429,8 @@ export default function HomepageScreen() {
 
           {/* User Details Card */}
           <View style={styles.profileCard}>
-            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#9CD5F4', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-              <ProfileIcon active />
+            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#FFE29A', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <UserNavIcon color="#E2852E" size={32} />
             </View>
             <Text style={{ fontFamily: 'ChelseaMarket', fontSize: 18, color: '#222222' }}>
               {user?.display_name || 'Bunda / Ayah'}
@@ -512,77 +481,31 @@ export default function HomepageScreen() {
         </ScrollView>
       )}
 
-      {/* Floating Bottom Navigation Container */}
+      {/* Floating Bottom Navigation Bar matching reference UI */}
       <View
         style={{
           position: 'absolute',
           bottom: Math.max(insets.bottom, 16) + 4,
           left: 24,
           right: 24,
-          zIndex: 20,
+          zIndex: 30,
         }}
       >
-        {/* Description on top-left of bottom bar */}
-        <View
-          style={{
-            alignSelf: 'flex-start',
-            marginBottom: 6,
-            marginLeft: 8,
-            paddingHorizontal: 14,
-            paddingVertical: 4,
-            backgroundColor: '#FFFFFF',
-            borderRadius: 12,
-            shadowColor: '#E2852E',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.15,
-            shadowRadius: 4,
-            elevation: 3,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: 'ChelseaMarket',
-              fontSize: 12,
-              color: '#E2852E',
-            }}
-          >
-            {activeTab === 'beranda'
-              ? 'Beranda'
-              : activeTab === 'proggres'
-                ? 'Progres'
-                : 'Profile'}
-          </Text>
-        </View>
-
-        {/* Floating Bottom Navigation Bar */}
-        <View
-          style={{
-            height: 64,
-            backgroundColor: '#FDE882',
-            borderRadius: 32,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            paddingHorizontal: 16,
-            shadowColor: '#A8801A',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.18,
-            shadowRadius: 10,
-            elevation: 6,
-          }}
-        >
+        <View style={styles.floatingNavBar}>
           {/* Tab 1: Beranda */}
           <TouchableOpacity
             onPress={() => setActiveTab('beranda')}
             activeOpacity={0.85}
-            style={styles.navTabBtn}
+            style={activeTab === 'beranda' ? styles.activeTabPill : styles.inactiveTabBtn}
           >
             {activeTab === 'beranda' ? (
-              <View style={styles.activeTabBubble}>
-                <HomeIcon active />
+              <View style={styles.activePillContent}>
+                <SparkleDeco />
+                <HomeSmileIcon color="#DF8026" size={24} />
+                <Text style={styles.activePillText}>Beranda</Text>
               </View>
             ) : (
-              <HomeIcon active={false} />
+              <HomeSmileIcon color="#FFEE91" size={26} />
             )}
           </TouchableOpacity>
 
@@ -590,14 +513,15 @@ export default function HomepageScreen() {
           <TouchableOpacity
             onPress={() => setActiveTab('proggres')}
             activeOpacity={0.85}
-            style={styles.navTabBtn}
+            style={activeTab === 'proggres' ? styles.activeTabPill : styles.inactiveTabBtn}
           >
             {activeTab === 'proggres' ? (
-              <View style={styles.activeTabBubble}>
-                <ProgressIcon active />
+              <View style={styles.activePillContent}>
+                <HeartPulseIcon color="#DF8026" size={24} />
+                <Text style={styles.activePillText}>Progres</Text>
               </View>
             ) : (
-              <ProgressIcon active={false} />
+              <HeartPulseIcon color="#FFEE91" size={26} />
             )}
           </TouchableOpacity>
 
@@ -605,14 +529,15 @@ export default function HomepageScreen() {
           <TouchableOpacity
             onPress={() => setActiveTab('profile')}
             activeOpacity={0.85}
-            style={styles.navTabBtn}
+            style={activeTab === 'profile' ? styles.activeTabPill : styles.inactiveTabBtn}
           >
             {activeTab === 'profile' ? (
-              <View style={styles.activeTabBubble}>
-                <ProfileIcon active />
+              <View style={styles.activePillContent}>
+                <UserNavIcon color="#DF8026" size={24} />
+                <Text style={styles.activePillText}>Profil</Text>
               </View>
             ) : (
-              <ProfileIcon active={false} />
+              <UserNavIcon color="#FFEE91" size={26} />
             )}
           </TouchableOpacity>
         </View>
@@ -622,61 +547,109 @@ export default function HomepageScreen() {
 }
 
 const styles = StyleSheet.create({
-  navTabBtn: {
-    width: 52,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeTabBubble: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  // Dashboard 2-column cards
+  dashboardCard: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    borderWidth: 1.2,
+    borderColor: '#ECECEC',
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.09,
+    shadowRadius: 8,
+    elevation: 3,
+    justifyContent: 'space-between',
+  },
+  cardContent: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 14,
+    backgroundColor: '#FFFFFF',
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  cardTitle: {
+    fontFamily: 'ChelseaMarket',
+    fontSize: 15.5,
+    color: '#222222',
+    marginBottom: 4,
+  },
+  cardDescription: {
+    fontFamily: 'ChelseaMarket',
+    fontSize: 10.5,
+    color: '#444444',
+    lineHeight: 14.5,
+    marginBottom: 14,
+    minHeight: 30,
+  },
+  cardOutlinedBtn: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2852E',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: '#F3BE46',
-    shadowColor: '#8A5D0B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.22,
-    shadowRadius: 5,
-    elevation: 4,
+    width: '100%',
   },
-  serviceCard: {
-    width: 180,
-    height: 240,
-    backgroundColor: '#A6DCED',
-    borderRadius: 24,
-    padding: 18,
+  cardOutlinedBtnText: {
+    fontFamily: 'ChelseaMarket',
+    fontSize: 13.5,
+    color: '#E2852E',
+    textAlign: 'center',
+  },
+
+  // Floating Bottom Navigation Bar
+  floatingNavBar: {
+    height: 64,
+    backgroundColor: '#DF8026',
+    borderRadius: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    paddingHorizontal: 10,
+    shadowColor: '#B05C0F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  activeTabPill: {
+    height: 48,
+    backgroundColor: '#FFEE91',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    shadowColor: '#A0500A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
     elevation: 2,
   },
-  serviceTag: {
-    alignSelf: 'flex-start',
-    fontFamily: 'ChelseaMarket',
-    fontSize: 11,
-    color: '#2B6CB0',
-    backgroundColor: '#EBF8FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+  activePillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-  serviceTitle: {
+  activePillText: {
     fontFamily: 'ChelseaMarket',
-    fontSize: 16,
-    color: '#222222',
+    fontSize: 15,
+    color: '#DF8026',
   },
-  serviceDesc: {
-    fontFamily: 'ChelseaMarket',
-    fontSize: 12,
-    color: '#555555',
-    lineHeight: 17,
+  inactiveTabBtn: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+
+  // Sub-tabs styles (History & Profile)
   emptyCard: {
     backgroundColor: '#FAF8EE',
     borderRadius: 24,
